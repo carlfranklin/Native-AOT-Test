@@ -206,7 +206,8 @@ The results obviously vary depending on multiple factors, such as Memory utiliza
   - 243 milliseconds.
   
 - *FibonacciAOT.exe*
-- 140 milliseconds.
+  - 140 milliseconds.
+
 
 ###### Memory Utilization
 
