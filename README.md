@@ -197,6 +197,23 @@ Once published, run the *FibonacciAOT.exe* file from the output folder.
 
 ### Results
 
+The results obviously vary depending on multiple factors, such as Memory utilization, Garbage Collection, etc. but overall the results were consistent.
+
+Memory seem to benefit in about 50%
+File size was about 30 times greater using Native AOT.
+Execution time did benefit for about 50 milliseconds running 1000 sequences, and about 650 milliseconds running 10000 sequences.
+
+###### Execution Time
+
+- Without Native AOT
+
+  - Total Time elapsed for 1000 executions: 742 milliseconds.
+  - Total Time elapsed for 10000 executions: 7865 milliseconds.
+
+- With Native AOT
+
+  - Total Time elapsed for 1000 executions: 686 milliseconds.
+  - Total Time elapsed for 10000 executions: 7207 milliseconds.
 
 ###### Memory Utilization
 
@@ -238,44 +255,7 @@ which come with the C++ Build Tools
 > [!NOTE]
 > Building the application in Linux or macOS would generate Native files for each platform.
 
-### Comparing Startup and Run Times
 
-We can compare startup times using a `System.Diagnostics.Process` and timing it with a `StopWatch` object.
-
-Add a new Console Application to the solution called `FibTimer` and replace the *Program.cs* with this:
-
-```c#
-using System.Diagnostics;
-
-Console.WriteLine("Application Startup Timer. Enter path to .exe filename or drag it into the app");
-string inputFileName = Console.ReadLine();
-if (string.IsNullOrEmpty(inputFileName)) return;
-// remove quotes
-inputFileName = inputFileName.Replace("/q", "");
-
-var process = new Process();
-process.StartInfo.FileName = inputFileName;
-var stopWatch = new Stopwatch();
-
-stopWatch.Start();
-process.Start();
-stopWatch.Stop();
-
-Console.WriteLine($"Startup for IL: {stopWatch.ElapsedMilliseconds}");
-```
-
-Set this app as the startup project, and run it. 
-
-From the FIle Explorer, drop one of the .exe files onto it and press ENTER. 
-
-You will see how long it took to load. The app will also run, so you get the benefit of testing the app itself at the same time.
-
-Here are my results:
-
-```
-Fibonacci.exe:     Load Time: 19ms   Time to execute: 282ms
-FibonacciAOT.exe:  Load Time: 12ms   Time to execute: 134ms
-```
 
 ## Resources
 
