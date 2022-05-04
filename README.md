@@ -77,7 +77,8 @@ for (int i = 1; i <= executions; i++)
 
 stopWatch.Stop();
 Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: " +
-    $"{stopWatch.ElapsedMilliseconds} milliseconds.");
+    $"{stopWatch.ElapsedMilliseconds} milliseconds. Press ENTER");
+Console.ReadLine();
 
 static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, 
     int numbersInSequence)
@@ -199,21 +200,13 @@ Once published, run the *FibonacciAOT.exe* file from the output folder.
 
 The results obviously vary depending on multiple factors, such as Memory utilization, Garbage Collection, etc. but overall the results were consistent.
 
-Memory seem to benefit in about 50%
-File size was about 30 times greater using Native AOT.
-Execution time did benefit for about 50 milliseconds running 1000 sequences, and about 650 milliseconds running 10000 sequences.
+###### Execution Time (both compiled in Release mode)
 
-###### Execution Time
-
-- Without Native AOT
-
-  - Total Time elapsed for 1000 executions: 742 milliseconds.
-  - Total Time elapsed for 10000 executions: 7865 milliseconds.
-
-- With Native AOT
-
-  - Total Time elapsed for 1000 executions: 686 milliseconds.
-  - Total Time elapsed for 10000 executions: 7207 milliseconds.
+- *Fibonacci.exe*
+  - 243 milliseconds.
+  
+- *FibonacciAOT.exe*
+- 140 milliseconds.
 
 ###### Memory Utilization
 

@@ -14,7 +14,9 @@ for (int i = 1; i <= executions; i++)
 
 stopWatch.Stop();
 Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: " +
-    $"{stopWatch.ElapsedMilliseconds} milliseconds.");
+    $"{stopWatch.ElapsedMilliseconds} milliseconds. Press ENTER");
+Console.ReadLine();
+
 
 static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, 
     int numbersInSequence)
