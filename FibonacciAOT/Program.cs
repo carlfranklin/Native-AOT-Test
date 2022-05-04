@@ -13,13 +13,16 @@ for (int i = 1; i <= executions; i++)
 }
 
 stopWatch.Stop();
-Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: {stopWatch.ElapsedMilliseconds} milliseconds.");
+Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: " +
+    $"{stopWatch.ElapsedMilliseconds} milliseconds.");
 
-static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, int numbersInSequence)
+static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed,
+    int numbersInSequence)
 {
     //Console.Write($"{firstNumber}{(numbersProcessed < numbersInSequence ? ", " : string.Empty)}");
     if (numbersProcessed < numbersInSequence)
     {
-        Fibonacci(secondNumber, firstNumber + secondNumber, numbersProcessed + 1, numbersInSequence);
+        Fibonacci(secondNumber, firstNumber + secondNumber,
+            numbersProcessed + 1, numbersInSequence);
     }
 }

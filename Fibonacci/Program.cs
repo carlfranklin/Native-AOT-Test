@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 
-var numbersInSequence = 45;
-var executions = 1000;
+var numbersInSequence = 10000;
+var executions = 10000;
 var stopWatch = new Stopwatch();
 var response = string.Empty;
 
@@ -13,13 +13,16 @@ for (int i = 1; i <= executions; i++)
 }
 
 stopWatch.Stop();
-Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: {stopWatch.ElapsedMilliseconds} milliseconds.");
+Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: " +
+    $"{stopWatch.ElapsedMilliseconds} milliseconds.");
 
-static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, int numbersInSequence)
+static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, 
+    int numbersInSequence)
 {
     //Console.Write($"{firstNumber}{(numbersProcessed < numbersInSequence ? ", " : string.Empty)}");
     if (numbersProcessed < numbersInSequence)
     {
-        Fibonacci(secondNumber, firstNumber + secondNumber, numbersProcessed + 1, numbersInSequence);
+        Fibonacci(secondNumber, firstNumber + secondNumber, 
+            numbersProcessed + 1, numbersInSequence);
     }
 }

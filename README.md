@@ -1,17 +1,36 @@
-## Native AOT in .NET 7
+# Native AOT in .NET 7
 
 Native AOT (Ahead of Time) is a group of technologies that help you build faster and lighter applications, by generating code at build time rather than at runtime, for .NET desktop client and server scenarios.
 
-Native AOT is similar the other .NET AOT technologies, but it only produces native components.
+Native AOT generates 100% native code at build-time with no dependencies.
 
-You can see benefits in the following areas:
+Native compiling for .NET has been around since the beginning of .NET.
 
-- Startup time
-- Memory usage
-- Size on disk
-- Access to no JIT platforms like iOS.
+[NGEN](https://docs.microsoft.com/en-us/dotnet/framework/tools/ngen-exe-native-image-generator) is a Native Image Generator for .NET Framework only.
 
-Other similar technologies that already exist are [Mono AOT](https://www.mono-project.com/docs/advanced/aot/) for Mobile and WASM scenarios, and [ReadyToRun](https://docs.microsoft.com/en-us/dotnet/core/deploying/ready-to-run) for client and server scenarios.
+[ReadyToRun](https://docs.microsoft.com/en-us/dotnet/core/deploying/ready-to-run) is a format used by [crossgen](https://devblogs.microsoft.com/dotnet/conversation-about-crossgen2/), a .NET Core tool that does a combination of compiling to native and IL (Just In Time).
+
+[Mono AOT](https://www.mono-project.com/docs/advanced/aot/) is used by Xamarin. iOS doesn't allow JIT compiling, so something had to be done there. 
+
+If you have been following Blazor, then you know about AOT for WASM, which uses Crossgen under the hood.
+
+### Benefits of AOT
+
+You can build self-contained apps that can be copied from system to system as long as they are the same.
+
+Faster load time is great for container apps, and general purpose apps as well.
+
+Smaller memory footprint because only the code that's required is loaded, not the entire CLR. Even though executable size is higher, if you look at memory being used it's much less.
+
+Performance may or may not be sufficiently improved. It will be better, but how much depends on what you're doing.
+
+### Drawbacks of AOT
+
+No Loading assemblies using Reflection or using `Reflection.Emit` for code generation. 
+
+May require tweaking for supporting dependencies.
+
+Longer build times.
 
 ## Prerequisites
 
@@ -31,7 +50,7 @@ Enable Desktop development with C++ workload
 
 The following demo is a Console Application that captures the time to generate any given numbers using the Fibonacci sequence with and without Native AOT enabled.
 
-### Create a Console Application
+### Create a Console Application called Fibonacci
 
 ![Create a new project](images/de393b6128c205b133e28e079da6c74cf711f5c81c6be481e89981b8459c96d9.png)
 
@@ -39,20 +58,13 @@ The following demo is a Console Application that captures the time to generate a
 
 ![Target .NET 7 (Preview)](images/57b48250251db866f4800b1cae4568280f5803e68fa53b48353f6dcee446a329.png)
 
-Remove the default code in *Program.cs*
-
-```csharp
-// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-```
-
-Add code to Generate the Fibonacci Sequence.
+Replace *Program.cs* with the following:
 
 ```csharp
 using System.Diagnostics;
 
 var numbersInSequence = 45;
-var executions = 1000;
+var executions = 1;
 var stopWatch = new Stopwatch();
 var response = string.Empty;
 
@@ -64,38 +76,38 @@ for (int i = 1; i <= executions; i++)
 }
 
 stopWatch.Stop();
-Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: {stopWatch.ElapsedMilliseconds} milliseconds.");
+Console.WriteLine($"\n\nTotal Time elapsed for {executions} executions: " +
+    $"{stopWatch.ElapsedMilliseconds} milliseconds.");
 
-static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, int numbersInSequence)
+static void Fibonacci(int firstNumber, int secondNumber, int numbersProcessed, 
+    int numbersInSequence)
 {
     Console.Write($"{firstNumber}{(numbersProcessed < numbersInSequence ? ", " : string.Empty)}");
     if (numbersProcessed < numbersInSequence)
     {
-        Fibonacci(secondNumber, firstNumber + secondNumber, numbersProcessed + 1,
-           numbersInSequence);
+        Fibonacci(secondNumber, firstNumber + secondNumber, 
+            numbersProcessed + 1, numbersInSequence);
     }
 }
 ```
 
-Add code to display execution time. (Just the code outside of the Fibonacci method.)
+Fibonacci numbers are defined at [WikiPedia](https://en.wikipedia.org/wiki/Fibonacci_number):
 
-```csharp
-using System.Diagnostics;
+> In mathematics, the **Fibonacci numbers**, commonly denoted *Fn*, form a [sequence](https://en.wikipedia.org/wiki/Integer_sequence), the **Fibonacci sequence**, in which each number is the sum of the two preceding ones.
 
-var numbersInSequence = 45;
-var stopWatch = new Stopwatch();
+The `Fibonacci` function fulfills this. You pass it the first number and the second number, the numbers processed, and the numbers in the sequence, and it calls itself after calculating the next number in the sequence. 
 
-stopWatch.Start();
-Fibonacci(0, 1, 1, numbersInSequence);
-stopWatch.Stop();
+I've put the following line in the function to print out the number:
 
-Console.WriteLine($"\n\nTotal Time elapsed: {stopWatch.ElapsedMilliseconds} milliseconds.");
-Console.ReadLine();
+```c#
+Console.Write($"{firstNumber}{(numbersProcessed < numbersInSequence ? ", " : string.Empty)}");
 ```
 
-Output for 45 numbers 1000 times:
+The `StopWatch` object measures the time it takes, which is displayed after the sequence is generated and runs.
 
-![image-20220503235141491](images/image-20220503235141491.png)
+Run the app and you should see something like this:
+
+![image-20220504003945954](images/image-20220504003945954.png)
 
 Outputting the series into the console adds an overhead because screen drawing.  Let's comment out the following line in the `Fibonacci` method:
 
@@ -103,11 +115,24 @@ Outputting the series into the console adds an overhead because screen drawing. 
 Console.Write($"{firstNumber}{(numbersProcessed < numbersInSequence ? ", " : string.Empty)}");
 ```
 
-### Create a new Console Application for testing Native AOT
+Running the app again shows that it took almost no time:
 
-Call it `FibonacciAOT`
+![image-20220504004159296](images/image-20220504004159296.png)
 
-#### Copy the code from the first application's Program.cs to the new application
+So, let's bump up the `numbersInSequence` and `executions` variables to 10,000:
+
+```c#
+var numbersInSequence = 10000;
+var executions = 10000;
+```
+
+and run it again:
+
+![image-20220504004510850](images/image-20220504004510850.png)
+
+Now we have something we can compare.
+
+Create a new Console Application for testing Native AOT called `FibonacciAOT` and copy the code from the first application's *Program.cs* to the new application
 
 #### Enable Native AOT
 
@@ -151,7 +176,7 @@ Click on Show all settings and change the Target runtime to your desired runtime
 ![Show all settings](images/83d54865100a3e1f60423f83e7af9ce1691ec57cfbedc60bb16f85c4c453c371.png)
 
 > [!TIP]
-> If you expand the File publish options, ReadyToRun can be set there.
+> If you expand the File publish options, ReadyToRun can be set there. We're not going to set this, but I just wanted to show you where it is.
 
 ![ReadyToRun](images/ea162118b22d8c48693c48875dc0e5fc71010e9664a6151443037bcd90ef7ac9.png)
 
@@ -168,25 +193,10 @@ as opposed of the Roslyn compiler.
 
 ![Roslyn](images/930779076c1ad8d9c8cb885da4172c00e4fd6a72c8e2dab1d7a11509bafa0494.png)
 
-##### Results
+Once published, run the *FibonacciAOT.exe* file from the output folder.
 
-The results obviously vary depending on multiple factors, such as Memory utilization, Garbage Collection, etc. but overall the results were consistent.
+### Results
 
-Memory seem to benefit in about 50%
-File size was about 30 times greater using Native AOT.
-Execution time did benefit for about 50 milliseconds running 1000 sequences, and about 650 milliseconds running 10000 sequences.
-
-###### Execution Time
-
-- Without Native AOT
-
-  - Total Time elapsed for 1000 executions: 742 milliseconds.
-  - Total Time elapsed for 10000 executions: 7865 milliseconds.
-
-- With Native AOT
-
-  - Total Time elapsed for 1000 executions: 686 milliseconds.
-  - Total Time elapsed for 10000 executions: 7207 milliseconds.
 
 ###### Memory Utilization
 
@@ -228,7 +238,44 @@ which come with the C++ Build Tools
 > [!NOTE]
 > Building the application in Linux or macOS would generate Native files for each platform.
 
+### Comparing Startup and Run Times
 
+We can compare startup times using a `System.Diagnostics.Process` and timing it with a `StopWatch` object.
+
+Add a new Console Application to the solution called `FibTimer` and replace the *Program.cs* with this:
+
+```c#
+using System.Diagnostics;
+
+Console.WriteLine("Application Startup Timer. Enter path to .exe filename or drag it into the app");
+string inputFileName = Console.ReadLine();
+if (string.IsNullOrEmpty(inputFileName)) return;
+// remove quotes
+inputFileName = inputFileName.Replace("/q", "");
+
+var process = new Process();
+process.StartInfo.FileName = inputFileName;
+var stopWatch = new Stopwatch();
+
+stopWatch.Start();
+process.Start();
+stopWatch.Stop();
+
+Console.WriteLine($"Startup for IL: {stopWatch.ElapsedMilliseconds}");
+```
+
+Set this app as the startup project, and run it. 
+
+From the FIle Explorer, drop one of the .exe files onto it and press ENTER. 
+
+You will see how long it took to load. The app will also run, so you get the benefit of testing the app itself at the same time.
+
+Here are my results:
+
+```
+Fibonacci.exe:     Load Time: 19ms   Time to execute: 282ms
+FibonacciAOT.exe:  Load Time: 12ms   Time to execute: 134ms
+```
 
 ## Resources
 
