@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 
-var numbersInSequence = 10000;
-var executions = 10000;
+var numbersInSequence = 45;
+var executions = 1000;
 var stopWatch = new Stopwatch();
 var response = string.Empty;
 
